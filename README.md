@@ -4,7 +4,9 @@ Northcoders News API
 
 [Trelo](https://trello.com/b/YOuuVcs7)
 
-[Link to Cyclic](https://easy-gray-walrus-coat.cyclic.app/api)
+[Cyclic](https://be-nc-news-img.cyclic.app/api)
+
+[Elephant](postgres://cceesolo:t55oRgsK9CQZXDYjn9sbPy7m8eTlZH7T@mouse.db.elephantsql.com/cceesolo)
 
 ## Description
 
