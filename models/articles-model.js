@@ -13,7 +13,7 @@ exports.selectArticles = (sort_by = 'created_at', topic, order = 'desc') => {
 	}
 
 	let queryString = `
-	SELECT COUNT(comments.article_id) AS comment_count, users.username AS author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes
+	SELECT COUNT(comments.article_id) AS comment_count, users.username AS author, articles.title, articles.img_url, articles.article_id, articles.topic, articles.created_at, articles.votes
 	FROM articles
 	LEFT JOIN users ON articles.author = users.username
 	LEFT JOIN  comments ON comments.article_id = articles.article_id
@@ -23,7 +23,7 @@ exports.selectArticles = (sort_by = 'created_at', topic, order = 'desc') => {
 		queryString += ` WHERE articles.topic = $1`;
 		queryValues.push(topic);
 	}
-	queryString += ` GROUP BY users.username, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes ORDER BY ${sort_by} ${order};`;
+	queryString += ` GROUP BY users.username, articles.article_id, articles.title,  articles.img_url, articles.topic, articles.created_at, articles.votes ORDER BY ${sort_by} ${order};`;
 	return db.query(queryString, queryValues).then((articles) => {
 		return articles.rows;
 	});
@@ -34,7 +34,7 @@ exports.selectArticleById = (article_id) => {
 		.query(
 			`
 	SELECT 
-	users.username AS author, articles.title, articles.article_id, articles.body, articles.topic, articles.created_at, articles.votes
+	users.username AS author, articles.title, articles.article_id, articles.body,   articles.img_url, articles.topic, articles.created_at, articles.votes
 	FROM articles
 	LEFT JOIN users ON articles.author = users.username
 	WHERE articles.article_id = $1;`,

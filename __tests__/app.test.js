@@ -60,6 +60,7 @@ describe('GET /api/articles', () => {
 					expect(article).toMatchObject({
 						comment_count: expect.any(String),
 						author: expect.any(String),
+						img_url: expect.any(String),
 						title: expect.any(String),
 						article_id: expect.any(Number),
 						topic: expect.any(String),
@@ -174,6 +175,8 @@ describe('GET: /api/articles/:article_id', () => {
 					topic: 'mitch',
 					author: 'butter_bridge',
 					body: 'I find this existence challenging',
+					img_url:
+						'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
 					created_at: '2020-07-09T16:11:00.000Z',
 					votes: 100,
 				});
@@ -388,6 +391,8 @@ describe('PATCH: /api/articles/:article_id', () => {
 					topic: 'mitch',
 					author: 'butter_bridge',
 					body: 'I find this existence challenging',
+					img_url:
+						'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
 					created_at: '2020-07-09T16:11:00.000Z',
 					votes: 101,
 				});
@@ -407,6 +412,8 @@ describe('PATCH: /api/articles/:article_id', () => {
 					topic: 'mitch',
 					author: 'butter_bridge',
 					body: 'I find this existence challenging',
+					img_url:
+						'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
 					created_at: '2020-07-09T16:11:00.000Z',
 					votes: 0,
 				});
@@ -426,6 +433,8 @@ describe('PATCH: /api/articles/:article_id', () => {
 					topic: 'mitch',
 					author: 'butter_bridge',
 					body: 'I find this existence challenging',
+					img_url:
+						'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
 					created_at: '2020-07-09T16:11:00.000Z',
 					votes: -100,
 				});

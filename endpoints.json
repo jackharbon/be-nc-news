@@ -20,6 +20,7 @@
 					"title": "The Notorious MSG’s Unlikely Formula For Success",
 					"article_id": "34",
 					"topic": "cooking",
+					"img_url": "https://img.freepik.com/free-photo/female-chef-cutting-fresh-vegetables_155003-12066.jpg?w=1800&t=st=1670348979~exp=1670349579~hmac=aa2ef8d75b63a1797dd87cf2abd1ee3593d2efc672aabd4ea7ccd3bc24b19bc8",
 					"created_at": "2020-11-22T06:13:00.000Z",
 					"votes": "0"
 				}
@@ -38,6 +39,7 @@
 						"article_id": 1,
 						"body": "This is part two of a series on how to get up and running with Systemd and Node.js. This part dives deeper into how to successfully run your app with systemd long-term, and how to set it up in a production environment.",
 						"topic": "coding",
+						"img_url": "https://img.freepik.com/free-photo/code-coding-programming-technology-technical-concept_53876-120436.jpg?w=1800&t=st=1670349050~exp=1670349650~hmac=1e2b85c441413613fcf927bc723ba7be856e76465da025bfd4b330aedd4cf8c8",
 						"created_at": "2020-11-07T01:03:00.000Z",
 						"votes": 0
 					}
