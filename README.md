@@ -1,12 +1,14 @@
 # Project title:
 
-Northcoders News API
+Northcoders News API with article cover
 
 [Trelo](https://trello.com/b/YOuuVcs7)
 
 [Cyclic](https://be-nc-news-img.cyclic.app/api)
 
 [Elephant](postgres://cceesolo:t55oRgsK9CQZXDYjn9sbPy7m8eTlZH7T@mouse.db.elephantsql.com/cceesolo)
+
+[GitHub](https://github.com/jackharbon/be-nc-news-img)
 
 ## Description
 

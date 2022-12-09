@@ -98,7 +98,7 @@
 		}
 	},
 	"PATCH /api/articles/:article_id": {
-		"description": "serves patching article votes, like: {`inc_votes`: 10}",
+		"description": "serves patching article votes, example: {`inc_votes`: 10}",
 		"queries": [],
 		"exampleResponse": {
 			"article": {
