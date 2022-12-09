@@ -23,10 +23,10 @@ app.get('/api/health', (req, res) => {
 app.get('/api', getApis);
 app.get('/api/topics', getTopics);
 app.get('/api/articles', getArticles);
-app.get('/api/users', getUsers);
 app.get('/api/articles/:article_id', getArticleById);
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
 app.post('/api/articles/:article_id/comments', postCommentByArticle);
+app.get('/api/users', getUsers);
 app.patch('/api/articles/:article_id', patchArticleById);
 app.delete('/api/comments/:comment_id', deleteCommentById);
 
