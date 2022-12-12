@@ -52,9 +52,11 @@ exports.selectCommentsByArticleId = (article_id) => {
 		if (comments.rows.length === 0) {
 			return Promise.reject({ status: 404, msg: 'Article Id not found!' });
 		}
-		return db.query('SELECT * FROM comments WHERE comments.article_id = $1;', [article_id]).then((comments) => {
-			return comments.rows;
-		});
+		return db
+			.query('SELECT * FROM comments WHERE comments.article_id = $1 ORDER BY comments.created_at ASC;', [article_id])
+			.then((comments) => {
+				return comments.rows;
+			});
 	});
 };
 exports.insertCommentByArticle = (article_id, body, author) => {
