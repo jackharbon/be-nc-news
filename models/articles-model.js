@@ -48,12 +48,12 @@ exports.selectArticleById = (article_id) => {
 		});
 };
 exports.selectCommentsByArticleId = (article_id) => {
-	return db.query('SELECT * FROM articles WHERE article_id = $1;', [article_id]).then((comments) => {
+	return db.query('SELECT * FROM articles WHERE article_id = $1 ORDER BY comments.created_at DESC;', [article_id]).then((comments) => {
 		if (comments.rows.length === 0) {
 			return Promise.reject({ status: 404, msg: 'Article Id not found!' });
 		}
 		return db
-			.query('SELECT * FROM comments WHERE comments.article_id = $1 ORDER BY comments.created_at ASC;', [article_id])
+			.query('SELECT * FROM comments WHERE comments.article_id = $1 ORDER BY comments.created_at DESC;', [article_id])
 			.then((comments) => {
 				return comments.rows;
 			});
