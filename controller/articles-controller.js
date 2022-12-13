@@ -5,6 +5,7 @@ const {
 	selectCommentsByArticleId,
 	insertCommentByArticle,
 	updateArticleById,
+	insertArticle,
 } = require('../models/articles-model.js');
 
 exports.getArticles = (req, res, next) => {
@@ -47,6 +48,14 @@ exports.patchArticleById = (req, res, next) => {
 	updateArticleById(article_id, inc_votes)
 		.then((article) => {
 			res.status(200).send({ article });
+		})
+		.catch(next);
+};
+exports.postArticle = (req, res, next) => {
+	const { title, topic, author, body, img_url } = req.body;
+	insertArticle(title, topic, author, body, img_url)
+		.then((article) => {
+			res.status(201).send({ article });
 		})
 		.catch(next);
 };

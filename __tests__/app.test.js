@@ -12,6 +12,20 @@ beforeEach(() => {
 afterAll(() => {
 	db.end();
 });
+// ! GET ALL APIs
+describe('GET /api json', () => {
+	test(`GET: 200 -> returns json`, () => {
+		return request(app)
+			.get('/api')
+			.expect(200)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('GET /api');
+				expect(body).toHaveProperty('GET /api/topics');
+				expect(body).toHaveProperty('GET /api/articles');
+			});
+	});
+});
+// ! GET TOPICS
 describe('GET /api/topics', () => {
 	test('GET: 200 -> returns array type object', () => {
 		return request(app)
@@ -39,6 +53,7 @@ describe('GET /api/topics', () => {
 			});
 	});
 });
+// ! GET ALL ARTICLES ORDER & QUERY
 describe('GET /api/articles', () => {
 	test('GET: 200 -> returns array type object', () => {
 		return request(app)
@@ -162,6 +177,7 @@ describe('GET /api/articles', () => {
 			});
 	});
 });
+// ! GET ARTICLE BY ID
 describe('GET: /api/articles/:article_id', () => {
 	test('GET: 200 -> returns a single article', () => {
 		const articleId = 1;
@@ -191,7 +207,7 @@ describe('GET: /api/articles/:article_id', () => {
 				expect(response.body.msg).toBe('Article Id not found!');
 			});
 	});
-	test('GET: 400 -> returns an appropriate and error message when given an invalid id', () => {
+	test('GET: 400 -> returns an appropriate error message when given an invalid id', () => {
 		const articleId = 'random-string';
 		return request(app)
 			.get(`/api/articles/${articleId}`)
@@ -201,6 +217,7 @@ describe('GET: /api/articles/:article_id', () => {
 			});
 	});
 });
+// ! GET COMMENTS BY ARTICLE ID
 describe('GET: /api/articles/:article_id/comments', () => {
 	test('GET: 200 -> returns an empty array if article does not have comments', () => {
 		const articleId = 2;
@@ -226,7 +243,7 @@ describe('GET: /api/articles/:article_id/comments', () => {
 				});
 			});
 	});
-	test('GET: 404 -> returns an appropriate and error message when given a valid but non-existent id', () => {
+	test('GET: 404 -> returns an appropriate error message when given a valid but non-existent id', () => {
 		const articleId = 999;
 		return request(app)
 			.get(`/api/articles/${articleId}/comments`)
@@ -235,7 +252,7 @@ describe('GET: /api/articles/:article_id/comments', () => {
 				expect(response.body.msg).toBe('Article Id not found!');
 			});
 	});
-	test('GET: 400 -> returns an appropriate and error message when given an invalid id', () => {
+	test('GET: 400 -> returns an appropriate error message when given an invalid id', () => {
 		const articleId = 'random-string';
 		return request(app)
 			.get(`/api/articles/${articleId}/comments`)
@@ -245,6 +262,7 @@ describe('GET: /api/articles/:article_id/comments', () => {
 			});
 	});
 });
+// ! POST COMMENT BY ARTICLE ID
 describe('POST: /api/articles/:articleId/comments', () => {
 	test('POST: 201 -> Responds with a new comment.', () => {
 		const articleId = 1;
@@ -336,7 +354,7 @@ describe('POST: /api/articles/:articleId/comments', () => {
 				expect(response.body.msg).toBe('Invalid username!');
 			});
 	});
-	test('POST: 400 -> sends an appropriate and error message when given an invalid id', () => {
+	test('POST: 400 -> sends an appropriate error message when given an invalid id', () => {
 		const articleId = 'random-string';
 		return request(app)
 			.post(`/api/articles/${articleId}/comments`)
@@ -349,7 +367,7 @@ describe('POST: /api/articles/:articleId/comments', () => {
 				expect(response.body.msg).toBe('Invalid URL!');
 			});
 	});
-	test('POST: 404 -> sends an appropriate and error message when given a valid but non-existent article id', () => {
+	test('POST: 404 -> sends an appropriate error message when given a valid but non-existent article id', () => {
 		const articleId = 999;
 		return request(app)
 			.post(`/api/articles/${articleId}/comments`)
@@ -362,7 +380,7 @@ describe('POST: /api/articles/:articleId/comments', () => {
 				expect(response.body.msg).toBe('Article Id not found!');
 			});
 	});
-	test('POST: 404 -> sends an appropriate and error message when given an invalid id', () => {
+	test('POST: 404 -> sends an appropriate error message when given an invalid id', () => {
 		const articleId = 'random-string/99/jhgfjfjhgg';
 		return request(app)
 			.post(`/api/articles/${articleId}/comments`)
@@ -376,6 +394,7 @@ describe('POST: /api/articles/:articleId/comments', () => {
 			});
 	});
 });
+// ! PATCH ARTICLE VOTES BY ARTICLE ID
 describe('PATCH: /api/articles/:article_id', () => {
 	test('PATCH: 200 -> responds with the added new vote to the votes in article', () => {
 		const articleId = 1;
@@ -485,6 +504,7 @@ describe('PATCH: /api/articles/:article_id', () => {
 			});
 	});
 });
+// ! GET ALL USERS
 describe('GET /api/users', () => {
 	test('GET: 200 -> returns array type object', () => {
 		return request(app)
@@ -514,6 +534,7 @@ describe('GET /api/users', () => {
 			});
 	});
 });
+// ! DELETE COMMENT BY ID
 describe('DELETE /api/comment/comment_id', () => {
 	test("DELETE: 204 -> response 204 if it's successful", () => {
 		return request(app).delete('/api/comments/1').expect(204);
@@ -546,15 +567,234 @@ describe('DELETE /api/comment/comment_id', () => {
 			});
 	});
 });
-describe('GET /api json', () => {
-	test(`GET: 200 -> returns json`, () => {
+// ! PATCH COMMENTS VOTES
+describe('PATCH: /api/comments/:comment_id', () => {
+	test('PATCH: 200 -> responds with the added new vote to the votes in comment', () => {
+		const comment_id = 33;
+		const updatedVotes = { inc_votes: 1 };
 		return request(app)
-			.get('/api')
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
 			.expect(200)
 			.then(({ body }) => {
-				expect(body).toHaveProperty('GET /api');
-				expect(body).toHaveProperty('GET /api/topics');
-				expect(body).toHaveProperty('GET /api/articles');
+				expect(body.comment).toEqual({
+					article_id: 1,
+					author: 'cooljmessy',
+					body: 'Explicabo perspiciatis voluptatem sunt tenetur maxime aut. Optio totam modi. Perspiciatis et quia.',
+					created_at: '2019-12-31T16:21:00.000Z',
+					votes: 5,
+				});
+			});
+	});
+	test('PATCH: 200 -> responds with votes taken away from votes in comment', () => {
+		const comment_id = 33;
+		const updatedVotes = { inc_votes: -1 };
+		return request(app)
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.comment).toEqual({
+					article_id: 1,
+					author: 'cooljmessy',
+					body: 'Explicabo perspiciatis voluptatem sunt tenetur maxime aut. Optio totam modi. Perspiciatis et quia.',
+					created_at: '2019-12-31T16:21:00.000Z',
+					votes: 3,
+				});
+			});
+	});
+	test('PATCH: 200 -> responds with votes taken away from votes in article below 0', () => {
+		const comment_id = 33;
+		const updatedVotes = { inc_votes: -104 };
+		return request(app)
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.comment).toEqual({
+					article_id: 1,
+					author: 'cooljmessy',
+					body: 'Explicabo perspiciatis voluptatem sunt tenetur maxime aut. Optio totam modi. Perspiciatis et quia.',
+					created_at: '2019-12-31T16:21:00.000Z',
+					votes: -100,
+				});
+			});
+	});
+	test('PATCH: 400 -> request body that does not have inc_votes', () => {
+		const comment_id = 33;
+		const updatedVotes = { inc_votes: null };
+		return request(app)
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing vote!');
+			});
+	});
+	test('PATCH: 400 -> request body that has inc_votes set to a value that is not a number', () => {
+		const comment_id = 33;
+		const updatedVotes = { inc_votes: 'votes has no number' };
+		return request(app)
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing vote!');
+			});
+	});
+	test('PATCH: 404 -> responds an appropriate an error message when given a valid but non-existent article id', () => {
+		const comment_id = 99999999;
+		const updatedVotes = { inc_votes: 1 };
+		return request(app)
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Comment Id not found!');
+			});
+	});
+	test('PATCH: 400 -> responds an appropriate an error message when given an invalid id', () => {
+		const comment_id = 'random-string';
+		const updatedVotes = { inc_votes: 1 };
+		return request(app)
+			.patch(`/api/comments/${comment_id}`)
+			.send(updatedVotes)
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid URL!');
+			});
+	});
+});
+// ! POST USER
+describe('POST: /api/users', () => {
+	test('POST: 201 -> Responds with a new user.', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				username: 'testuser',
+				name: 'Test User',
+				avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('user');
+				expect(body.user.username).toBe('testuser');
+				expect(body.user.name).toBe('Test User');
+			});
+	});
+	test('POST: 201 -> the user object being returned matches the complete structure of users already in the database', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				username: 'testuser',
+				name: 'Test User',
+				avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body.user).toMatchObject({
+					username: expect.any(String),
+					name: expect.any(String),
+					avatar_url: expect.any(String),
+				});
+			});
+	});
+	test('POST: 201 -> App ignore unnecessary request body keys and responds with a new user.', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				user_id: 0,
+				username: 'testuser',
+				name: 'Test User',
+				avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('user');
+				expect(body.user.name).toBe('Test User');
+				expect(body.user.user_id).not.toBe(0);
+			});
+	});
+	test('POST: 400 -> Missing username', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				username: '',
+				name: 'Test User',
+				avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing username!');
+			});
+	});
+	test('POST: 400 -> Missing name', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				username: 'testuser',
+				name: '',
+				avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing name!');
+			});
+	});
+	test('POST: 400 -> Missing avatar_url', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				username: 'testuser',
+				name: 'Test User',
+				avatar_url: '',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing avatar link!');
+			});
+	});
+	test('POST: 400 -> User already in database', () => {
+		return request(app)
+			.post(`/api/users`)
+			.send({
+				username: 'butter_bridge',
+				name: 'Test User',
+				avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Username already registered!');
+			});
+	});
+});
+// ! GET USER BY USERNAME
+describe('GET: /api/users/:username', () => {
+	test('GET: 200 -> returns an array with one user', () => {
+		const username = 'butter_bridge';
+		return request(app)
+			.get(`/api/users/${username}`)
+			.expect(200)
+			.then((response) => {
+				expect(Object.keys(response.body.user)).toEqual(['username', 'name', 'avatar_url']);
+			});
+	});
+	test('GET: 404 -> returns an appropriate error message when given a valid but non-existent username', () => {
+		const username = 'non_existing_username';
+		return request(app)
+			.get(`/api/users/${username}`)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Username not found!');
+			});
+	});
+	test('GET: 404 -> returns an appropriate error message when given an invalid username', () => {
+		const username = '9999999';
+		return request(app)
+			.get(`/api/users/${username}`)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Username not found!');
 			});
 	});
 });

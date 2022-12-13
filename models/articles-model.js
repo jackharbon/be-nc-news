@@ -90,3 +90,30 @@ exports.updateArticleById = (article_id, inc_votes) => {
 		return result.rows[0];
 	});
 };
+exports.insertArticle = (title, topic, author, body, img_url) => {
+	if (title.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing title!' });
+	}
+	if (topic.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing topic!' });
+	}
+	if (author.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing author!' });
+	}
+	if (body.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing body!' });
+	}
+	if (img_url.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing img_url!' });
+	}
+	return db
+		.query(
+			`
+	  INSERT INTO articles (title, topic, author, body, img_url) 
+	  VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
+			[title, topic, author, body, img_url]
+		)
+		.then((article) => {
+			return article.rows[0];
+		});
+};
