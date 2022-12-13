@@ -1,5 +1,6 @@
 const db = require('../db/connection.js');
 
+// ! GET ALL ARTICLES ORDER & QUERY
 exports.selectArticles = (sort_by = 'created_at', topic, order = 'desc') => {
 	const validColumns = ['title', 'topic', 'author', 'body', 'created_at', 'votes'];
 	const validTopics = ['mitch', 'cats', 'paper'];
@@ -28,7 +29,31 @@ exports.selectArticles = (sort_by = 'created_at', topic, order = 'desc') => {
 		return articles.rows;
 	});
 };
-
+// ! POST NEW ARTICLE
+exports.insertArticle = (title, topic, author, body, img_url) => {
+	if (title.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing title!' });
+	} else if (topic.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing topic!' });
+	} else if (author.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing author!' });
+	} else if (body.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing body!' });
+	} else if (img_url.length === 0) {
+		return Promise.reject({ status: 400, msg: 'Missing img_url!' });
+	}
+	return db
+		.query(
+			`
+			  INSERT INTO articles (title, topic, author, body, img_url) 
+			  VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
+			[title, topic, author, body, img_url]
+		)
+		.then((article) => {
+			return article.rows[0];
+		});
+};
+// ! GET ARTICLE BY ID
 exports.selectArticleById = (article_id) => {
 	return db
 		.query(
@@ -47,6 +72,7 @@ exports.selectArticleById = (article_id) => {
 			return articles.rows[0];
 		});
 };
+// ! GET COMMENTS BY ARTICLE ID
 exports.selectCommentsByArticleId = (article_id) => {
 	return db.query('SELECT * FROM articles WHERE article_id = $1;', [article_id]).then((comments) => {
 		if (comments.rows.length === 0) {
@@ -59,6 +85,7 @@ exports.selectCommentsByArticleId = (article_id) => {
 			});
 	});
 };
+// ! POST NEW COMMENT BY ARTICLE ID
 exports.insertCommentByArticle = (article_id, body, author) => {
 	if (body.length === 0) {
 		return Promise.reject({ status: 400, msg: 'Missing comment!' });
@@ -79,6 +106,7 @@ exports.insertCommentByArticle = (article_id, body, author) => {
 			});
 	});
 };
+// ! PATCH ARTICLE VOTES BY ARTICLE ID
 exports.updateArticleById = (article_id, inc_votes) => {
 	if (!inc_votes || isNaN(inc_votes)) {
 		return Promise.reject({ status: 400, msg: 'Missing vote!' });
@@ -89,31 +117,4 @@ exports.updateArticleById = (article_id, inc_votes) => {
 		}
 		return result.rows[0];
 	});
-};
-exports.insertArticle = (title, topic, author, body, img_url) => {
-	if (title.length === 0) {
-		return Promise.reject({ status: 400, msg: 'Missing title!' });
-	}
-	if (topic.length === 0) {
-		return Promise.reject({ status: 400, msg: 'Missing topic!' });
-	}
-	if (author.length === 0) {
-		return Promise.reject({ status: 400, msg: 'Missing author!' });
-	}
-	if (body.length === 0) {
-		return Promise.reject({ status: 400, msg: 'Missing body!' });
-	}
-	if (img_url.length === 0) {
-		return Promise.reject({ status: 400, msg: 'Missing img_url!' });
-	}
-	return db
-		.query(
-			`
-	  INSERT INTO articles (title, topic, author, body, img_url) 
-	  VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
-			[title, topic, author, body, img_url]
-		)
-		.then((article) => {
-			return article.rows[0];
-		});
 };

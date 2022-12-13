@@ -1,5 +1,6 @@
 const db = require('../db/connection.js');
 
+// ! GET ALL USERS
 exports.selectUsers = () => {
 	let queryString = `
 	SELECT * FROM users
@@ -9,6 +10,7 @@ exports.selectUsers = () => {
 		return users.rows;
 	});
 };
+// ! POST NEW USER
 exports.insertUser = (username, name, avatar_url) => {
 	return db
 		.query(
@@ -39,6 +41,7 @@ SELECT * FROM users WHERE username = $1;`,
 			return Promise.reject({ status: 400, msg: 'Username already registered!' });
 		});
 };
+// ! GET USER BY USERNAME
 exports.selectUserByUsername = (username) => {
 	return db
 		.query(
@@ -53,3 +56,4 @@ exports.selectUserByUsername = (username) => {
 			return users.rows[0];
 		});
 };
+// ! PATCH USER BY USERNAME

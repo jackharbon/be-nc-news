@@ -1,10 +1,10 @@
 exports.errorPSQL = (err, req, res, next) => {
 	if (err.code === '22P02') {
-		res.status(400).send({ msg: 'Invalid URL!' });
+		res.status(400).send({ msg: 'Invalid Text Representation (URL)!' });
 	} else if (err.code == '23502') {
-		res.status(400).send({ msg: 'Invalid content body' });
+		res.status(400).send({ msg: 'Not Null Violation!' });
 	} else if (err.code == '23503') {
-		res.status(400).send({ msg: 'Invalid username!' });
+		res.status(400).send({ msg: 'Foreign Key Violation!' });
 	} else {
 		next(err);
 	}

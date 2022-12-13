@@ -3,7 +3,6 @@ const seed = require('../db/seeds/seed.js');
 const testData = require('../db/data/test-data');
 const app = require('../app.js');
 const db = require('../db/connection.js');
-const articles = require('../db/data/test-data/articles.js');
 const { expect } = require('@jest/globals');
 
 beforeEach(() => {
@@ -25,34 +24,7 @@ describe('GET /api json', () => {
 			});
 	});
 });
-// ! GET TOPICS
-describe('GET /api/topics', () => {
-	test('GET: 200 -> returns array type object', () => {
-		return request(app)
-			.get('/api/topics')
-			.expect(200)
-			.then(({ body }) => {
-				expect(body).toHaveProperty('topics');
-				expect(Array.isArray(body.topics)).toBe(true);
-			});
-	});
-	test('GET: 200 -> array contains object properties including slug and description', () => {
-		return request(app)
-			.get('/api/topics')
-			.expect(200)
-			.then(({ body }) => {
-				expect(body.topics.length).toBe(3);
-				body.topics.forEach((topic) => {
-					expect(topic).toHaveProperty('slug');
-					expect(topic).toHaveProperty('description');
-					expect(topic).toMatchObject({
-						slug: expect.any(String),
-						description: expect.any(String),
-					});
-				});
-			});
-	});
-});
+// * --------- ARTICLES -------
 // ! GET ALL ARTICLES ORDER & QUERY
 describe('GET /api/articles', () => {
 	test('GET: 200 -> returns array type object', () => {
@@ -177,6 +149,188 @@ describe('GET /api/articles', () => {
 			});
 	});
 });
+// ! POST NEW ARTICLE
+describe('POST: /api/articles', () => {
+	test('POST: 201 -> Responds with a new article.', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('article');
+				expect(body.article.title).toBe('New article');
+				expect(body.article.topic).toBe('mitch');
+				expect(body.article.author).toBe('butter_bridge');
+				expect(body.article.body).toBe('I find this existence challenging');
+				expect(body.article.votes).toBe(0);
+			});
+	});
+	test('POST: 201 -> the article object being returned matches the complete structure of articles already in the database', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body.article).toMatchObject({
+					title: expect.any(String),
+					topic: expect.any(String),
+					author: expect.any(String),
+					body: expect.any(String),
+					img_url: expect.any(String),
+					votes: expect.any(Number),
+				});
+			});
+	});
+	test('POST: 201 -> App ignore unnecessary request body keys and responds with a new article.', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+				created_at: 1594329060000,
+				votes: 100,
+				article_id: 0,
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('article');
+				expect(body.article.title).toBe('New article');
+				expect(body.article.body).toBe('I find this existence challenging');
+				expect(body.article.created_at).not.toBe(1594329060000);
+				expect(body.article.article_id).not.toBe(0);
+				expect(body.article.votes).toBe(0);
+			});
+	});
+	test('POST: 400 -> Missing title', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: '',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing title!');
+			});
+	});
+	test('POST: 400 -> Missing topic', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: '',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing topic!');
+			});
+	});
+	test('POST: 400 -> Topic is not present in database', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'Uknown topic',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Foreign Key Violation!');
+			});
+	});
+	test('POST: 400 -> Missing author', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: '',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing author!');
+			});
+	});
+	test('POST: 400 -> Author is not present in database', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: 'Uknown author',
+				body: 'I find this existence challenging',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Foreign Key Violation!');
+			});
+	});
+	test('POST: 400 -> Missing body', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: 'Uknown author',
+				body: '',
+				img_url:
+					'https://img.freepik.com/free-photo/man-analysing-binary-code-virtual-screen_53876-96329.jpg?t=st=1670349043~exp=1670349643~hmac=bc3337b8b4711dcab1657855ca86f5443a6ebe1454e44203ba9c6a3978c99573',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing body!');
+			});
+	});
+	test('POST: 400 -> Missing img_url', () => {
+		return request(app)
+			.post(`/api/articles`)
+			.send({
+				title: 'New article',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				img_url: '',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing img_url!');
+			});
+	});
+});
 // ! GET ARTICLE BY ID
 describe('GET: /api/articles/:article_id', () => {
 	test('GET: 200 -> returns a single article', () => {
@@ -213,184 +367,7 @@ describe('GET: /api/articles/:article_id', () => {
 			.get(`/api/articles/${articleId}`)
 			.expect(400)
 			.then((response) => {
-				expect(response.body.msg).toBe('Invalid URL!');
-			});
-	});
-});
-// ! GET COMMENTS BY ARTICLE ID
-describe('GET: /api/articles/:article_id/comments', () => {
-	test('GET: 200 -> returns an empty array if article does not have comments', () => {
-		const articleId = 2;
-		return request(app)
-			.get(`/api/articles/${articleId}/comments`)
-			.expect(200)
-			.then((response) => {
-				expect(response.body.comments).toEqual(expect.any(Array));
-			});
-	});
-	test('GET: 200 -> returns an array of comments belonging to a single article', () => {
-		const articleId = 1;
-		return request(app)
-			.get(`/api/articles/${articleId}/comments`)
-			.expect(200)
-			.then((response) => {
-				expect(response.body.comments).toEqual(expect.any(Array));
-				expect(Object.keys(response.body.comments[0])).toEqual(
-					expect.arrayContaining(['body', 'votes', 'author', 'article_id', 'created_at'])
-				);
-				response.body.comments.forEach((comment) => {
-					expect(comment.article_id).toBe(1);
-				});
-			});
-	});
-	test('GET: 404 -> returns an appropriate error message when given a valid but non-existent id', () => {
-		const articleId = 999;
-		return request(app)
-			.get(`/api/articles/${articleId}/comments`)
-			.expect(404)
-			.then((response) => {
-				expect(response.body.msg).toBe('Article Id not found!');
-			});
-	});
-	test('GET: 400 -> returns an appropriate error message when given an invalid id', () => {
-		const articleId = 'random-string';
-		return request(app)
-			.get(`/api/articles/${articleId}/comments`)
-			.expect(400)
-			.then((response) => {
-				expect(response.body.msg).toBe('Invalid URL!');
-			});
-	});
-});
-// ! POST COMMENT BY ARTICLE ID
-describe('POST: /api/articles/:articleId/comments', () => {
-	test('POST: 201 -> Responds with a new comment.', () => {
-		const articleId = 1;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'butter_bridge',
-			})
-			.expect(201)
-			.then(({ body }) => {
-				expect(body).toHaveProperty('comment');
-				expect(body.comment.body).toBe('Testing POST comment for article Id');
-				expect(body.comment.article_id).toBe(articleId);
-			});
-	});
-	test('POST: 201 -> the comment object being returned matches the complete structure of comments already in the database', () => {
-		const articleId = 1;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'butter_bridge',
-			})
-			.expect(201)
-			.then(({ body }) => {
-				expect(body.comment).toMatchObject({
-					body: expect.any(String),
-					votes: expect.any(Number),
-					author: expect.any(String),
-					article_id: expect.any(Number),
-					created_at: expect.any(String),
-				});
-			});
-	});
-	test('POST: 201 -> App ignore unnecessary request body keys and responds with a new comment.', () => {
-		const articleId = 1;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'butter_bridge',
-				votes: 500,
-			})
-			.expect(201)
-			.then(({ body }) => {
-				expect(body).toHaveProperty('comment');
-				expect(body.comment.body).toBe('Testing POST comment for article Id');
-				expect(body.comment.article_id).toBe(articleId);
-				expect(body.comment.votes).toBe(0);
-			});
-	});
-	test('POST: 400 -> Missing body', () => {
-		const articleId = 1;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: '',
-				username: 'butter_bridge',
-			})
-			.expect(400)
-			.then((response) => {
-				expect(response.body.msg).toBe('Missing comment!');
-			});
-	});
-	test('POST: 400 -> Missing username', () => {
-		const articleId = 1;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: '',
-			})
-			.expect(400)
-			.then((response) => {
-				expect(response.body.msg).toBe('Invalid username!');
-			});
-	});
-	test('POST: 400 -> Invalid username', () => {
-		const articleId = 1;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'no_valid_username',
-			})
-			.expect(400)
-			.then((response) => {
-				expect(response.body.msg).toBe('Invalid username!');
-			});
-	});
-	test('POST: 400 -> sends an appropriate error message when given an invalid id', () => {
-		const articleId = 'random-string';
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'butter_bridge',
-			})
-			.expect(400)
-			.then((response) => {
-				expect(response.body.msg).toBe('Invalid URL!');
-			});
-	});
-	test('POST: 404 -> sends an appropriate error message when given a valid but non-existent article id', () => {
-		const articleId = 999;
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'butter_bridge',
-			})
-			.expect(404)
-			.then((response) => {
-				expect(response.body.msg).toBe('Article Id not found!');
-			});
-	});
-	test('POST: 404 -> sends an appropriate error message when given an invalid id', () => {
-		const articleId = 'random-string/99/jhgfjfjhgg';
-		return request(app)
-			.post(`/api/articles/${articleId}/comments`)
-			.send({
-				body: 'Testing POST comment for article Id',
-				username: 'butter_bridge',
-			})
-			.expect(404)
-			.then((response) => {
-				expect(response.body.msg).toBe('Invalid URL!');
+				expect(response.body.msg).toBe('Invalid Text Representation (URL)!');
 			});
 	});
 });
@@ -500,73 +477,188 @@ describe('PATCH: /api/articles/:article_id', () => {
 			.send(updatedVotes)
 			.expect(400)
 			.then((response) => {
+				expect(response.body.msg).toBe('Invalid Text Representation (URL)!');
+			});
+	});
+});
+// ! GET COMMENTS BY ARTICLE ID
+describe('GET: /api/articles/:article_id/comments', () => {
+	test('GET: 200 -> returns an empty array if article does not have comments', () => {
+		const articleId = 2;
+		return request(app)
+			.get(`/api/articles/${articleId}/comments`)
+			.expect(200)
+			.then((response) => {
+				expect(response.body.comments).toEqual(expect.any(Array));
+			});
+	});
+	test('GET: 200 -> returns an array of comments belonging to a single article', () => {
+		const articleId = 1;
+		return request(app)
+			.get(`/api/articles/${articleId}/comments`)
+			.expect(200)
+			.then((response) => {
+				expect(response.body.comments).toEqual(expect.any(Array));
+				expect(Object.keys(response.body.comments[0])).toEqual(
+					expect.arrayContaining(['body', 'votes', 'author', 'article_id', 'created_at'])
+				);
+				response.body.comments.forEach((comment) => {
+					expect(comment.article_id).toBe(1);
+				});
+			});
+	});
+	test('GET: 404 -> returns an appropriate error message when given a valid but non-existent id', () => {
+		const articleId = 999;
+		return request(app)
+			.get(`/api/articles/${articleId}/comments`)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Article Id not found!');
+			});
+	});
+	test('GET: 400 -> returns an appropriate error message when given an invalid id', () => {
+		const articleId = 'random-string';
+		return request(app)
+			.get(`/api/articles/${articleId}/comments`)
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid Text Representation (URL)!');
+			});
+	});
+});
+// ! POST NEW COMMENT BY ARTICLE ID
+describe('POST: /api/articles/:articleId/comments', () => {
+	test('POST: 201 -> Responds with a new comment.', () => {
+		const articleId = 1;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'butter_bridge',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('comment');
+				expect(body.comment.body).toBe('Testing POST comment for article Id');
+				expect(body.comment.article_id).toBe(articleId);
+			});
+	});
+	test('POST: 201 -> the comment object being returned matches the complete structure of comments already in the database', () => {
+		const articleId = 1;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'butter_bridge',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body.comment).toMatchObject({
+					body: expect.any(String),
+					votes: expect.any(Number),
+					author: expect.any(String),
+					article_id: expect.any(Number),
+					created_at: expect.any(String),
+				});
+			});
+	});
+	test('POST: 201 -> App ignore unnecessary request body keys and responds with a new comment.', () => {
+		const articleId = 1;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'butter_bridge',
+				votes: 500,
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('comment');
+				expect(body.comment.body).toBe('Testing POST comment for article Id');
+				expect(body.comment.article_id).toBe(articleId);
+				expect(body.comment.votes).toBe(0);
+			});
+	});
+	test('POST: 400 -> Missing body', () => {
+		const articleId = 1;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: '',
+				username: 'butter_bridge',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing comment!');
+			});
+	});
+	test('POST: 400 -> Missing username', () => {
+		const articleId = 1;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: '',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Foreign Key Violation!');
+			});
+	});
+	test('POST: 400 -> Invalid username', () => {
+		const articleId = 1;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'no_valid_username',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Foreign Key Violation!');
+			});
+	});
+	test('POST: 400 -> sends an appropriate error message when given an invalid id', () => {
+		const articleId = 'random-string';
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'butter_bridge',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid Text Representation (URL)!');
+			});
+	});
+	test('POST: 404 -> sends an appropriate error message when given a valid but non-existent article id', () => {
+		const articleId = 999;
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'butter_bridge',
+			})
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Article Id not found!');
+			});
+	});
+	test('POST: 404 -> sends an appropriate error message when given an invalid id', () => {
+		const articleId = 'random-string/99/jhgfjfjhgg';
+		return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send({
+				body: 'Testing POST comment for article Id',
+				username: 'butter_bridge',
+			})
+			.expect(404)
+			.then((response) => {
 				expect(response.body.msg).toBe('Invalid URL!');
 			});
 	});
 });
-// ! GET ALL USERS
-describe('GET /api/users', () => {
-	test('GET: 200 -> returns array type object', () => {
-		return request(app)
-			.get('/api/users')
-			.expect(200)
-			.then(({ body }) => {
-				expect(body).toHaveProperty('users');
-				expect(Array.isArray(body.users)).toBe(true);
-			});
-	});
-	test('GET: 200 -> array contains object properties including username, name, avatar_url', () => {
-		return request(app)
-			.get('/api/users')
-			.expect(200)
-			.then(({ body }) => {
-				expect(body.users.length).toBe(4);
-				body.users.forEach((user) => {
-					expect(user).toHaveProperty('username');
-					expect(user).toHaveProperty('name');
-					expect(user).toHaveProperty('avatar_url');
-					expect(user).toMatchObject({
-						username: expect.any(String),
-						name: expect.any(String),
-						avatar_url: expect.any(String),
-					});
-				});
-			});
-	});
-});
-// ! DELETE COMMENT BY ID
-describe('DELETE /api/comment/comment_id', () => {
-	test("DELETE: 204 -> response 204 if it's successful", () => {
-		return request(app).delete('/api/comments/1').expect(204);
-	});
-	test('DELETE: 404 -> responds an appropriate an error message when given a valid but non-existent comment id', () => {
-		const commentId = 999;
-		return request(app)
-			.delete(`/api/comments/${commentId}`)
-			.expect(404)
-			.then((res) => {
-				expect(res.body.msg).toBe('Comment Id not found!');
-			});
-	});
-	test('DELETE: 404 -> responds an appropriate an error message when given an invalid id', () => {
-		const commentId = 'random-string/99/jhgfjfjhgg';
-		return request(app)
-			.delete(`/api/comments/${commentId}`)
-			.expect(404)
-			.then((res) => {
-				expect(res.body.msg).toBe('Invalid URL!');
-			});
-	});
-	test('DELETE: 400 -> responds an appropriate an error message when given an invalid id', () => {
-		const commentId = 'random-string';
-		return request(app)
-			.delete(`/api/comments/${commentId}`)
-			.expect(400)
-			.then((res) => {
-				expect(res.body.msg).toBe('Invalid URL!');
-			});
-	});
-});
+// * --------- COMMENTS -------
 // ! PATCH COMMENTS VOTES
 describe('PATCH: /api/comments/:comment_id', () => {
 	test('PATCH: 200 -> responds with the added new vote to the votes in comment', () => {
@@ -661,11 +753,104 @@ describe('PATCH: /api/comments/:comment_id', () => {
 			.send(updatedVotes)
 			.expect(400)
 			.then((response) => {
-				expect(response.body.msg).toBe('Invalid URL!');
+				expect(response.body.msg).toBe('Invalid Text Representation (URL)!');
 			});
 	});
 });
-// ! POST USER
+// ! DELETE COMMENT BY ID
+describe('DELETE /api/comment/comment_id', () => {
+	test("DELETE: 204 -> response 204 if it's successful", () => {
+		return request(app).delete('/api/comments/1').expect(204);
+	});
+	test('DELETE: 404 -> responds an appropriate an error message when given a valid but non-existent comment id', () => {
+		const commentId = 999;
+		return request(app)
+			.delete(`/api/comments/${commentId}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Comment Id not found!');
+			});
+	});
+	test('DELETE: 404 -> responds an appropriate an error message when given an invalid id', () => {
+		const commentId = 'random-string/99/jhgfjfjhgg';
+		return request(app)
+			.delete(`/api/comments/${commentId}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Invalid URL!');
+			});
+	});
+	test('DELETE: 400 -> responds an appropriate an error message when given an invalid id', () => {
+		const commentId = 'random-string';
+		return request(app)
+			.delete(`/api/comments/${commentId}`)
+			.expect(400)
+			.then((res) => {
+				expect(res.body.msg).toBe('Invalid Text Representation (URL)!');
+			});
+	});
+});
+// * --------- TOPICS -------
+// ! GET TOPICS
+describe('GET /api/topics', () => {
+	test('GET: 200 -> returns array type object', () => {
+		return request(app)
+			.get('/api/topics')
+			.expect(200)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('topics');
+				expect(Array.isArray(body.topics)).toBe(true);
+			});
+	});
+	test('GET: 200 -> array contains object properties including slug and description', () => {
+		return request(app)
+			.get('/api/topics')
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.topics.length).toBe(3);
+				body.topics.forEach((topic) => {
+					expect(topic).toHaveProperty('slug');
+					expect(topic).toHaveProperty('description');
+					expect(topic).toMatchObject({
+						slug: expect.any(String),
+						description: expect.any(String),
+					});
+				});
+			});
+	});
+});
+// * --------- USERS -------
+// ! GET ALL USERS
+describe('GET /api/users', () => {
+	test('GET: 200 -> returns array type object', () => {
+		return request(app)
+			.get('/api/users')
+			.expect(200)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('users');
+				expect(Array.isArray(body.users)).toBe(true);
+			});
+	});
+	test('GET: 200 -> array contains object properties including username, name, avatar_url', () => {
+		return request(app)
+			.get('/api/users')
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.users.length).toBe(4);
+				body.users.forEach((user) => {
+					expect(user).toHaveProperty('username');
+					expect(user).toHaveProperty('name');
+					expect(user).toHaveProperty('avatar_url');
+					expect(user).toMatchObject({
+						username: expect.any(String),
+						name: expect.any(String),
+						avatar_url: expect.any(String),
+					});
+				});
+			});
+	});
+});
+// ! POST NEW USER
 describe('POST: /api/users', () => {
 	test('POST: 201 -> Responds with a new user.', () => {
 		return request(app)
@@ -798,3 +983,4 @@ describe('GET: /api/users/:username', () => {
 			});
 	});
 });
+// ! PATCH USER BY USERNAME
