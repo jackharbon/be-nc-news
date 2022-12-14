@@ -662,7 +662,7 @@ describe('POST: /api/articles/:articleId/comments', () => {
 // ! PATCH COMMENTS VOTES
 describe('PATCH: /api/comments/:comment_id', () => {
 	test('PATCH: 200 -> responds with the added new vote to the votes in comment', () => {
-		const comment_id = 33;
+		const comment_id = 10;
 		const updatedVotes = { inc_votes: 1 };
 		return request(app)
 			.patch(`/api/comments/${comment_id}`)
@@ -670,50 +670,35 @@ describe('PATCH: /api/comments/:comment_id', () => {
 			.expect(200)
 			.then(({ body }) => {
 				expect(body.comment).toEqual({
-					article_id: 1,
-					author: 'cooljmessy',
-					body: 'Explicabo perspiciatis voluptatem sunt tenetur maxime aut. Optio totam modi. Perspiciatis et quia.',
-					created_at: '2019-12-31T16:21:00.000Z',
-					votes: 5,
-				});
-			});
-	});
-	test('PATCH: 200 -> responds with votes taken away from votes in comment', () => {
-		const comment_id = 33;
-		const updatedVotes = { inc_votes: -1 };
-		return request(app)
-			.patch(`/api/comments/${comment_id}`)
-			.send(updatedVotes)
-			.expect(200)
-			.then(({ body }) => {
-				expect(body.comment).toEqual({
-					article_id: 1,
-					author: 'cooljmessy',
-					body: 'Explicabo perspiciatis voluptatem sunt tenetur maxime aut. Optio totam modi. Perspiciatis et quia.',
-					created_at: '2019-12-31T16:21:00.000Z',
-					votes: 3,
+					body: 'git push origin master',
+					votes: 1,
+					author: 'icellusedkars',
+					article_id: 3,
+					comment_id: 10,
+					created_at: '2020-06-20T03:24:00.000Z',
 				});
 			});
 	});
 	test('PATCH: 200 -> responds with votes taken away from votes in article below 0', () => {
-		const comment_id = 33;
-		const updatedVotes = { inc_votes: -104 };
+		const comment_id = 10;
+		const updatedVotes = { inc_votes: -100 };
 		return request(app)
 			.patch(`/api/comments/${comment_id}`)
 			.send(updatedVotes)
 			.expect(200)
 			.then(({ body }) => {
 				expect(body.comment).toEqual({
-					article_id: 1,
-					author: 'cooljmessy',
-					body: 'Explicabo perspiciatis voluptatem sunt tenetur maxime aut. Optio totam modi. Perspiciatis et quia.',
-					created_at: '2019-12-31T16:21:00.000Z',
+					body: 'git push origin master',
 					votes: -100,
+					author: 'icellusedkars',
+					article_id: 3,
+					comment_id: 10,
+					created_at: '2020-06-20T03:24:00.000Z',
 				});
 			});
 	});
 	test('PATCH: 400 -> request body that does not have inc_votes', () => {
-		const comment_id = 33;
+		const comment_id = 10;
 		const updatedVotes = { inc_votes: null };
 		return request(app)
 			.patch(`/api/comments/${comment_id}`)
@@ -724,7 +709,7 @@ describe('PATCH: /api/comments/:comment_id', () => {
 			});
 	});
 	test('PATCH: 400 -> request body that has inc_votes set to a value that is not a number', () => {
-		const comment_id = 33;
+		const comment_id = 10;
 		const updatedVotes = { inc_votes: 'votes has no number' };
 		return request(app)
 			.patch(`/api/comments/${comment_id}`)
@@ -984,3 +969,65 @@ describe('GET: /api/users/:username', () => {
 	});
 });
 // ! PATCH USER BY USERNAME
+describe('PATCH: /api/users/username', () => {
+	test('PATCH: 200 -> responds with the  updated user data', () => {
+		const username = 'butter_bridge';
+		const updatedUser = {
+			name: 'James Bond',
+			avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/7/7e/MrMen-Bump.png/revision/latest?cb=20180123225553',
+		};
+		return request(app)
+			.patch(`/api/users/${username}`)
+			.send(updatedUser)
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.user).toEqual({
+					username: 'butter_bridge',
+					name: 'James Bond',
+					avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/7/7e/MrMen-Bump.png/revision/latest?cb=20180123225553',
+				});
+			});
+	});
+	test('PATCH: 400 -> request body that have empty properties', () => {
+		const username = 'butter_bridge';
+		const updatedUser = {
+			name: '',
+			avatar_url: '',
+		};
+		return request(app)
+			.patch(`/api/users/${username}`)
+			.send(updatedUser)
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Nothing to change!');
+			});
+	});
+	test('PATCH: 404 -> responds an appropriate an error message when given username is not valid', () => {
+		const username = 99999999;
+		const updatedUser = {
+			name: 'James Bond',
+			avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/7/7e/MrMen-Bump.png/revision/latest?cb=20180123225553',
+		};
+		return request(app)
+			.patch(`/api/users/${username}`)
+			.send(updatedUser)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid username!');
+			});
+	});
+	test('PATCH: 404 -> responds an appropriate an error message when given username is not in the database', () => {
+		const username = 'random-string';
+		const updatedUser = {
+			name: 'James Bond',
+			avatar_url: 'https://vignette.wikia.nocookie.net/mrmen/images/7/7e/MrMen-Bump.png/revision/latest?cb=20180123225553',
+		};
+		return request(app)
+			.patch(`/api/users/${username}`)
+			.send(updatedUser)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid username!');
+			});
+	});
+});

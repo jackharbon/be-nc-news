@@ -48,7 +48,7 @@ app.post('/api/users', postUser);
 // ! GET USER BY USERNAME
 app.get('/api/users/:username', getUserByUsername);
 // ! PATCH USER BY USERNAME
-// app.patch('/api/users/:username', patchUserByUsername);
+app.patch('/api/users/:username', patchUserByUsername);
 
 app.get('/api/health', (req, res) => {
 	res.status(200).send({ msg: 'server up and running' });

@@ -1,5 +1,5 @@
 const { app } = require('express');
-const { selectUsers, insertUser, selectUserByUsername } = require('../models/users-model.js');
+const { selectUsers, insertUser, selectUserByUsername, updateUserByUsername } = require('../models/users-model.js');
 
 // ! GET ALL USERS
 exports.getUsers = (req, res, next) => {
@@ -26,3 +26,12 @@ exports.getUserByUsername = (req, res, next) => {
 		.catch(next);
 };
 // ! PATCH USER BY USERNAME
+exports.patchUserByUsername = (req, res, next) => {
+	const { username } = req.params;
+	const { name, avatar_url } = req.body;
+	updateUserByUsername(username, name, avatar_url)
+		.then((user) => {
+			res.status(200).send({ user });
+		})
+		.catch(next);
+};

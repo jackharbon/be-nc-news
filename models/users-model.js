@@ -15,7 +15,7 @@ exports.insertUser = (username, name, avatar_url) => {
 	return db
 		.query(
 			`
-SELECT * FROM users WHERE username = $1;`,
+		SELECT * FROM users WHERE username = $1;`,
 			[username]
 		)
 		.then((user) => {
@@ -57,3 +57,31 @@ exports.selectUserByUsername = (username) => {
 		});
 };
 // ! PATCH USER BY USERNAME
+exports.updateUserByUsername = (username, name, avatar_url) => {
+	return db.query('SELECT * FROM users WHERE username = $1;', [username]).then((user) => {
+		if (user.rows.length === 0) {
+			return Promise.reject({ status: 404, msg: 'Invalid username!' });
+		}
+		if (!name && !avatar_url) {
+			return Promise.reject({ status: 400, msg: 'Nothing to change!' });
+		}
+
+		let queryString = `UPDATE users SET`;
+		const queryValues = [username];
+		if (name) {
+			queryString += ` name = $2,`;
+			queryValues.push(name);
+		}
+		if (avatar_url) {
+			queryString += ` avatar_url = $3`;
+			queryValues.push(avatar_url);
+		}
+		queryString += ` WHERE username = $1 RETURNING *;`;
+		return db.query(queryString, queryValues).then((user) => {
+			if (!user.rows.length) {
+				return Promise.reject({ status: 404, msg: 'User data was not updated!' });
+			}
+			return user.rows[0];
+		});
+	});
+};
