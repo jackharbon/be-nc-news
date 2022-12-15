@@ -1,5 +1,5 @@
 const { app } = require('express');
-const { selectUsers, insertUser, selectUserByUsername, updateUserByUsername } = require('../models/users-model.js');
+const { selectUsers, insertUser, selectUserByUsername, updateUserByUsername, removeUserByUsername } = require('../models/users-model.js');
 
 // ! GET ALL USERS
 exports.getUsers = (req, res, next) => {
@@ -34,4 +34,11 @@ exports.patchUserByUsername = (req, res, next) => {
 			res.status(200).send({ user });
 		})
 		.catch(next);
+};
+// ! DELETE USER BY USERNAME
+exports.deleteUserByUsername = (req, res, next) => {
+	const { username } = req.params;
+	removeUserByUsername(username)
+		.then(() => res.status(204).send())
+		.catch((err) => next(err));
 };

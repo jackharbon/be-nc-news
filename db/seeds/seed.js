@@ -17,7 +17,7 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
 	const usersTablePromise = db.query(`
   CREATE TABLE users (
     username VARCHAR PRIMARY KEY,
-    name VARCHAR NOT NULL,
+    name VARCHAR  NOT NULL,
     avatar_url VARCHAR
   );`);
 
@@ -27,8 +27,8 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
   CREATE TABLE articles (
     article_id SERIAL PRIMARY KEY,
     title VARCHAR NOT NULL,
-    topic VARCHAR NOT NULL REFERENCES topics(slug),
-    author VARCHAR NOT NULL REFERENCES users(username),
+    topic VARCHAR NOT NULL REFERENCES topics(slug) ON DELETE NO ACTION ON UPDATE CASCADE,
+    author VARCHAR NOT NULL REFERENCES users(username) ON DELETE NO ACTION ON UPDATE CASCADE,
     body VARCHAR NOT NULL,
     img_url VARCHAR,
     created_at TIMESTAMP DEFAULT NOW(),
@@ -39,8 +39,8 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
   CREATE TABLE comments (
     comment_id SERIAL PRIMARY KEY,
     body VARCHAR NOT NULL,
-    article_id INT REFERENCES articles(article_id) NOT NULL,
-    author VARCHAR REFERENCES users(username) NOT NULL,
+    article_id INT REFERENCES articles(article_id) ON DELETE NO ACTION ON UPDATE CASCADE NOT NULL,
+    author VARCHAR REFERENCES users(username) ON DELETE NO ACTION ON UPDATE CASCADE NOT NULL,
     votes INT DEFAULT 0 NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
   );`);

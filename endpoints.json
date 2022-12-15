@@ -71,6 +71,17 @@
 			}
 		}
 	},
+	"DELETE /api/article/:article_id": {
+		"description": "serves removing article with given article_id",
+		"queries": [],
+		"exampleResponse": {
+			"article": [
+				{
+					"status": 204
+				}
+			]
+		}
+	},
 	"GET /api/articles/:article_id/comments": {
 		"description": "serves an array of comments for an article",
 		"queries": [],
@@ -138,6 +149,26 @@
 			"topics": [{ "slug": "football", "description": "Footie!" }]
 		}
 	},
+	"POST /api/topic": {
+		"description": "serves posting a new topic",
+		"queries": [],
+		"exampleResponse": {
+			"article": {
+				"description": "Code is love, code is life",
+				"slug": "coding"
+			}
+		}
+	},
+	"PATCH /api/topics/:slug": {
+		"description": "serves patching topic slug and description, example: {`inc_votes`: 10}",
+		"queries": [],
+		"exampleResponse": {
+			"article": {
+				"description": "Code is love, code is life",
+				"slug": "coding"
+			}
+		}
+	},
 	"GET /api/users": {
 		"description": "serves an array of all users",
 		"queries": [],
@@ -191,6 +222,17 @@
 					"username": "edited_user",
 					"name": "Edited User",
 					"avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+				}
+			]
+		}
+	},
+	"DELETE /api/users/:username": {
+		"description": "serves removing user with given :username",
+		"queries": [],
+		"exampleResponse": {
+			"user": [
+				{
+					"status": 204
 				}
 			]
 		}

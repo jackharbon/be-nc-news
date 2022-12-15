@@ -85,3 +85,14 @@ exports.updateUserByUsername = (username, name, avatar_url) => {
 		});
 	});
 };
+// ! DELETE USER BY USERNAME
+exports.removeUserByUsername = (username) => {
+	return db.query('SELECT * FROM users WHERE username = $1;', [username]).then((user) => {
+		if (user.rows.length === 0) {
+			return Promise.reject({ status: 404, msg: 'Username not found!' });
+		}
+		return db.query('DELETE FROM users WHERE users.username = $1;', [username]).then((user) => {
+			return user.rows;
+		});
+	});
+};

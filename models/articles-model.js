@@ -72,6 +72,30 @@ exports.selectArticleById = (article_id) => {
 			return articles.rows[0];
 		});
 };
+// ! PATCH ARTICLE VOTES BY ARTICLE ID
+exports.updateArticleById = (article_id, inc_votes) => {
+	if (!inc_votes || isNaN(inc_votes)) {
+		return Promise.reject({ status: 400, msg: 'Missing vote!' });
+	}
+	return db.query('UPDATE articles SET votes = votes + $2 WHERE article_id = $1 RETURNING *', [article_id, inc_votes]).then((result) => {
+		if (!result.rows.length) {
+			return Promise.reject({ status: 404, msg: 'Article Id not found!' });
+		}
+		return result.rows[0];
+	});
+};
+// ! DELETE ARTICLE BY ID
+exports.removeArticleById = (article_id) => {
+	return db.query('SELECT * FROM articles WHERE article_id = $1;', [article_id]).then((article) => {
+		if (article.rows.length === 0) {
+			return Promise.reject({ status: 404, msg: 'Article Id not found!' });
+		}
+		return db.query('DELETE FROM articles WHERE articles.article_id = $1;', [article_id]).then((article) => {
+			return article.rows;
+		});
+	});
+};
+
 // ! GET COMMENTS BY ARTICLE ID
 exports.selectCommentsByArticleId = (article_id) => {
 	return db.query('SELECT * FROM articles WHERE article_id = $1;', [article_id]).then((comments) => {
@@ -104,17 +128,5 @@ exports.insertCommentByArticle = (article_id, body, author) => {
 			.then((comment) => {
 				return comment.rows[0];
 			});
-	});
-};
-// ! PATCH ARTICLE VOTES BY ARTICLE ID
-exports.updateArticleById = (article_id, inc_votes) => {
-	if (!inc_votes || isNaN(inc_votes)) {
-		return Promise.reject({ status: 400, msg: 'Missing vote!' });
-	}
-	return db.query('UPDATE articles SET votes = votes + $2 WHERE article_id = $1 RETURNING *', [article_id, inc_votes]).then((result) => {
-		if (!result.rows.length) {
-			return Promise.reject({ status: 404, msg: 'Article Id not found!' });
-		}
-		return result.rows[0];
 	});
 };

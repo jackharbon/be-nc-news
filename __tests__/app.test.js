@@ -481,6 +481,39 @@ describe('PATCH: /api/articles/:article_id', () => {
 			});
 	});
 });
+// ! DELETE ARTICLE BY ID
+describe('DELETE /api/article/article_id', () => {
+	test("DELETE: 204 -> response 204 if it's successful", () => {
+		return request(app).delete('/api/articles/1').expect(204);
+	});
+	test('DELETE: 404 -> responds an appropriate an error message when given a valid but non-existent article id', () => {
+		const articleId = 999999;
+		return request(app)
+			.delete(`/api/articles/${articleId}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Article Id not found!');
+			});
+	});
+	test('DELETE: 404 -> responds an appropriate an error message when given an invalid id', () => {
+		const articleId = 'random-string/99/jhgfjfjhgg';
+		return request(app)
+			.delete(`/api/articles/${articleId}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Invalid URL!');
+			});
+	});
+	test('DELETE: 400 -> responds an appropriate an error message when given an invalid id', () => {
+		const articleId = 'random-string';
+		return request(app)
+			.delete(`/api/articles/${articleId}`)
+			.expect(400)
+			.then((res) => {
+				expect(res.body.msg).toBe('Invalid Text Representation (URL)!');
+			});
+	});
+});
 // ! GET COMMENTS BY ARTICLE ID
 describe('GET: /api/articles/:article_id/comments', () => {
 	test('GET: 200 -> returns an empty array if article does not have comments', () => {
@@ -804,6 +837,200 @@ describe('GET /api/topics', () => {
 			});
 	});
 });
+// ! POST NEW TOPIC
+describe('POST: /api/topics', () => {
+	test('POST: 201 -> Responds with a new topic.', () => {
+		return request(app)
+			.post(`/api/topics`)
+			.send({
+				slug: 'newtopic',
+				description: 'topic for testing',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('topic');
+				expect(body.topic.slug).toBe('newtopic');
+				expect(body.topic.description).toBe('topic for testing');
+			});
+	});
+	test('POST: 201 -> the topic object being returned matches the complete structure of topics already in the database', () => {
+		return request(app)
+			.post(`/api/topics`)
+			.send({
+				slug: 'newtopic',
+				description: 'topic for testing',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body.topic).toMatchObject({
+					slug: expect.any(String),
+					description: expect.any(String),
+				});
+			});
+	});
+	test('POST: 201 -> App ignore unnecessary request body keys and responds with a new topic.', () => {
+		return request(app)
+			.post(`/api/topics`)
+			.send({
+				topic_id: '1',
+				slug: 'newtopic',
+				description: 'topic for testing',
+			})
+			.expect(201)
+			.then(({ body }) => {
+				expect(body).toHaveProperty('topic');
+				expect(body.topic.slug).toBe('newtopic');
+				expect(body.topic.description).toBe('topic for testing');
+			});
+	});
+	test('POST: 400 -> Missing slug', () => {
+		return request(app)
+			.post(`/api/topics`)
+			.send({
+				slug: '',
+				description: 'topic for testing',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing slug!');
+			});
+	});
+	test('POST: 400 -> Missing description', () => {
+		return request(app)
+			.post(`/api/topics`)
+			.send({
+				slug: 'newtopic',
+				description: '',
+			})
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Missing description!');
+			});
+	});
+	test('POST: 400 -> request body with topic already existing in the database', () => {
+		const newTopic = {
+			slug: 'mitch',
+			description: 'new topic for existing slug',
+		};
+		return request(app)
+			.post(`/api/topics`)
+			.send(newTopic)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('This topic already exists in database!');
+			});
+	});
+});
+// ! PATCH TOPIC BY SLUG
+describe('PATCH: /api/topics/slug', () => {
+	test('PATCH: 200 -> responds with the updated topic data', () => {
+		const slug = 'mitch';
+		const updatedTopic = {
+			slug: 'new_topic',
+			description: 'new topic for testing',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.topic).toEqual({
+					slug: 'new_topic',
+					description: 'new topic for testing',
+				});
+			});
+	});
+	test('PATCH: 200 -> request body that have only new slug', () => {
+		const slug = 'mitch';
+		const updatedTopic = {
+			slug: 'new_topic',
+			description: '',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.topic).toEqual({
+					slug: 'new_topic',
+					description: 'The man, the Mitch, the legend',
+				});
+			});
+	});
+	test('PATCH: 200 -> request body that have only new description', () => {
+		const slug = 'mitch';
+		const updatedTopic = {
+			slug: '',
+			description: 'New description for mitch topic',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.topic).toEqual({
+					slug: 'mitch',
+					description: 'New description for mitch topic',
+				});
+			});
+	});
+	test('PATCH: 404 -> request body with topic already existing in the database', () => {
+		const slug = 'mitch';
+		const updatedTopic = {
+			slug: 'cats',
+			description: 'new topic for existing slug',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('This topic already exists in database!');
+			});
+	});
+	test('PATCH: 400 -> request body that have empty properties', () => {
+		const slug = 'mitch';
+		const updatedTopic = {
+			slug: '',
+			description: '',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(400)
+			.then((response) => {
+				expect(response.body.msg).toBe('Nothing to change!');
+			});
+	});
+	test('PATCH: 404 -> responds an appropriate an error message when given slug is not valid', () => {
+		const slug = 99999999;
+		const updatedTopic = {
+			slug: 'new_topic',
+			description: 'new topic for testing',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid slug!');
+			});
+	});
+	test('PATCH: 404 -> responds an appropriate an error message when slug to be changed is not in the database', () => {
+		const slug = 'random-string';
+		const updatedTopic = {
+			slug: 'new_topic',
+			description: 'new topic for testing',
+		};
+		return request(app)
+			.patch(`/api/topics/${slug}`)
+			.send(updatedTopic)
+			.expect(404)
+			.then((response) => {
+				expect(response.body.msg).toBe('Invalid slug!');
+			});
+	});
+});
 // * --------- USERS -------
 // ! GET ALL USERS
 describe('GET /api/users', () => {
@@ -816,7 +1043,7 @@ describe('GET /api/users', () => {
 				expect(Array.isArray(body.users)).toBe(true);
 			});
 	});
-	test('GET: 200 -> array contains object properties including username, name, avatar_url', () => {
+	test('GET: 200 -> array contains object properties including username, name, description', () => {
 		return request(app)
 			.get('/api/users')
 			.expect(200)
@@ -970,7 +1197,7 @@ describe('GET: /api/users/:username', () => {
 });
 // ! PATCH USER BY USERNAME
 describe('PATCH: /api/users/username', () => {
-	test('PATCH: 200 -> responds with the  updated user data', () => {
+	test('PATCH: 200 -> responds with the updated user data', () => {
 		const username = 'butter_bridge';
 		const updatedUser = {
 			name: 'James Bond',
@@ -1028,6 +1255,40 @@ describe('PATCH: /api/users/username', () => {
 			.expect(404)
 			.then((response) => {
 				expect(response.body.msg).toBe('Invalid username!');
+			});
+	});
+});
+// ! DELETE USER BY USERNAME
+describe('DELETE /api/user/username', () => {
+	test("DELETE: 204 -> response 204 if it's successful", () => {
+		const username = 'icellusedkars';
+		return request(app).delete(`/api/users/${username}`).expect(204);
+	});
+	test('DELETE: 404 -> responds an appropriate an error message when given a valid but non-existent username', () => {
+		const username = 'uknown_username';
+		return request(app)
+			.delete(`/api/users/${username}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Username not found!');
+			});
+	});
+	test('DELETE: 404 -> responds an appropriate an error message when given an invalid username', () => {
+		const username = 'random-string/99/jhgfjfjhgg';
+		return request(app)
+			.delete(`/api/users/${username}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Invalid URL!');
+			});
+	});
+	test('DELETE: 400 -> responds an appropriate an error message when given an invalid username', () => {
+		const username = '9999999999';
+		return request(app)
+			.delete(`/api/users/${username}`)
+			.expect(404)
+			.then((res) => {
+				expect(res.body.msg).toBe('Username not found!');
 			});
 	});
 });

@@ -6,6 +6,7 @@ const {
 	insertCommentByArticle,
 	updateArticleById,
 	insertArticle,
+	removeArticleById,
 } = require('../models/articles-model.js');
 
 // ! GET ALL ARTICLES ORDER & QUERY
@@ -35,6 +36,23 @@ exports.getArticleById = (req, res, next) => {
 		})
 		.catch(next);
 };
+// ! PATCH ARTICLE VOTES BY ARTICLE ID
+exports.patchArticleById = (req, res, next) => {
+	const { article_id } = req.params;
+	const { inc_votes } = req.body;
+	updateArticleById(article_id, inc_votes)
+		.then((article) => {
+			res.status(200).send({ article });
+		})
+		.catch(next);
+};
+// ! DELETE ARTICLE BY ID
+exports.deleteArticleById = (req, res, next) => {
+	const { article_id } = req.params;
+	removeArticleById(article_id)
+		.then(() => res.status(204).send())
+		.catch((err) => next(err));
+};
 // ! GET COMMENTS BY ARTICLE ID
 exports.getCommentsByArticleId = (req, res, next) => {
 	const { article_id } = req.params;
@@ -52,16 +70,6 @@ exports.postCommentByArticle = (req, res, next) => {
 	insertCommentByArticle(article_id, body, username)
 		.then((comment) => {
 			res.status(201).send({ comment });
-		})
-		.catch(next);
-};
-// ! PATCH ARTICLE VOTES BY ARTICLE ID
-exports.patchArticleById = (req, res, next) => {
-	const { article_id } = req.params;
-	const { inc_votes } = req.body;
-	updateArticleById(article_id, inc_votes)
-		.then((article) => {
-			res.status(200).send({ article });
 		})
 		.catch(next);
 };
